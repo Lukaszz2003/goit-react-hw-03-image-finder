@@ -7,7 +7,7 @@ class ImageGallery extends Component {
   render() {
     return (
       <ul className={css.ImageGallery}>
-        {this.props.image.map((image, index) => (
+        {this.props.images.map((image, index) => (
           <ImageGalleryItem
             key={`${index}_${image.id}`}
             image={image}
@@ -23,5 +23,4 @@ ImageGallery.propTypes = {
   images: PropTypes.array.isRequired,
   onImageClick: PropTypes.func.isRequired,
 };
-
 export default ImageGallery;

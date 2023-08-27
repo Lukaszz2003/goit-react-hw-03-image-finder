@@ -1,8 +1,8 @@
-import React, { Componet } from 'react';
+import React, { Component } from 'react';
 import css from './Modal.module.css';
 import PropTypes from 'prop-types';
 
-class Modal extends Componet {
+class Modal extends Component {
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -17,7 +17,7 @@ class Modal extends Componet {
     }
   };
 
-  handleCose = event => {
+  handleClose = event => {
     if (event.target === event.currentTarget) {
       this.props.onClose();
     }

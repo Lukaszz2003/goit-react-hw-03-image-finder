@@ -12,7 +12,7 @@ class ImageGalleryItem extends Component {
       <li className={css.ImageGalleryItem}>
         <img
           className={css['ImageGalleryItem-image']}
-          src={this.props.image.webformURL}
+          src={this.props.image.webformatURL}
           alt=""
           onClick={this.handleClick}
           loading="lazy"

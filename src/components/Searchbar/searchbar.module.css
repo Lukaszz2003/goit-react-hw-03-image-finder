@@ -9,14 +9,14 @@
   padding-top: 12px;
   padding-bottom: 12px;
 
-  background-color: lightsalmon;
+  background-color: darkcyan;
 }
 .SearchForm {
   display: flex;
   align-items: center;
   width: 100%;
   max-width: 600px;
-  background-color: #fff;
+  background-color: lightskyblue;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -24,7 +24,7 @@
   display: inline-block;
   width: 48px;
   height: 48px;
-  border: 0;
+  border: none;
   background-image: url('/src/Images/search-icon.svg');
   background-size: 45%;
   background-repeat: no-repeat;
@@ -35,7 +35,7 @@
   outline: none;
 }
 .SearchForm-button:hover {
-  opacity: 1;
+  opacity: 3;
 }
 
 .SearchForm-button-label {
@@ -58,11 +58,11 @@
   outline: none;
   padding-left: 4px;
   padding-right: 4px;
-  height: 100%;
-  width: 100%;
+  background-color: lightskyblue;
 }
 
 .SearchForm-input::placeholder {
   font: inherit;
   font-size: 18px;
+  color: slategray;
 }

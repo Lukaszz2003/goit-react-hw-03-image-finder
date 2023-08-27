@@ -1,10 +1,10 @@
-import React, { Componet } from 'react';
+import React, { Component } from 'react';
 import css from './searchbar.module.css';
 import PropTypes from 'prop-types';
 
-class Searchbar extends Componet {
+class Searchbar extends Component {
   state = {
-    auery: '',
+    query: '',
   };
 
   handleChange = event => {

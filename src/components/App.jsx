@@ -19,19 +19,16 @@ class App extends Component {
   componentDidUpdate(_, prevState) {
     const { query, page, images } = this.state;
     if (prevState.query !== query || prevState.page !== page) {
-      // Only fetch images if query or page has changed
       this.fetchImages();
     } else if (
       prevState.images.length !== images.length &&
       prevState.images.length !== 0
     ) {
-      // Scroll to bottom if images have been updated and it's not the initial load
       this.scrollToBottom();
     }
   }
 
   handleSearch = query => {
-    // check if the query is different from the previous query
     if (query !== this.state.prevQuery) {
       this.setState({ query, images: [], page: 1, prevQuery: query });
     }
@@ -60,7 +57,6 @@ class App extends Component {
         images: [...prevState.images, ...data.hits],
       }));
 
-      // add delay to
       setTimeout(() => {
         this.setState({ isLoading: false });
       }, 500);
