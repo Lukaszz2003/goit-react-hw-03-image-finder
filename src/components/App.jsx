@@ -1,117 +1,121 @@
-import { Component } from 'react';
-import { ThreeCircles } from 'react-loader-spinner';
-import toast, { Toaster } from 'react-hot-toast';
-import { ImageGallery } from './ImageGallery/ImageGallery';
-import { Searchbar } from './Searchbar/Searchbar';
-import { fetchImages } from 'services/apiService';
-import { Loader } from './Loader/Loader';
-import { Button } from './Button/Button';
-import { Modal } from './Modal/Modal';
-import css from './App.module.css';
+import React, { Component } from 'react';
+import Searchbar from './Searchbar/Searchbar';
+import ImageGallery from './ImageGallery/ImageGallery';
+import Button from './Button/Button';
+import LoaderSpinner from './Loader/Loader';
+import Modal from './Modal/Modal';
 
-export class App extends Component {
+class App extends Component {
   state = {
     query: '',
     images: [],
     page: 1,
-    modalImageURL: '',
     isLoading: false,
     showModal: false,
-    endCollection: false,
-    tags: '',
+    selectedImage: null,
+    prevQuery: '',
   };
 
-  openModal = (url, tags) => {
-    this.setState({
-      showModal: true,
-      modalImageURL: url,
-      tags,
-    });
+  componentDidUpdate(_, prevState) {
+    const { query, page, images } = this.state;
+    if (prevState.query !== query || prevState.page !== page) {
+      // Only fetch images if query or page has changed
+      this.fetchImages();
+    } else if (
+      prevState.images.length !== images.length &&
+      prevState.images.length !== 0
+    ) {
+      // Scroll to bottom if images have been updated and it's not the initial load
+      this.scrollToBottom();
+    }
+  }
+
+  handleSearch = query => {
+    // check if the query is different from the previous query
+    if (query !== this.state.prevQuery) {
+      this.setState({ query, images: [], page: 1, prevQuery: query });
+    }
   };
 
-  closeModal = () => {
-    this.setState({
-      showModal: false,
-      modalImageURL: '',
-      tags: '',
-    });
+  fetchImages = async () => {
+    const { query, page } = this.state;
+    const perPage = 12;
+    const apiKey = '38129363-ebf30580ea635c0303c0013d8';
+    const url = `https://pixabay.com/api/?key=${apiKey}&q=${query}&image_type=photo&pretty=true&page=${page}&per_page=${perPage}`;
+
+    this.setState({ isLoading: true });
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch images');
+      }
+
+      const data = await response.json();
+      if (data.totalHits === 0) {
+        throw new Error('No images found for the given query');
+      }
+
+      this.setState(prevState => ({
+        images: [...prevState.images, ...data.hits],
+      }));
+
+      // add delay to
+      setTimeout(() => {
+        this.setState({ isLoading: false });
+      }, 500);
+    } catch (error) {
+      console.error(error.message);
+      this.setState({ isLoading: false });
+    }
   };
 
-  handleFormSubmit = query => {
-    this.setState({ query, page: 1, images: [], endCollection: false });
+  scrollToBottom = () => {
+    let currentScrollPosition = window.scrollY;
+    let targetScrollPosition = document.body.scrollHeight - window.innerHeight;
+    let scrollStep = Math.round(
+      (targetScrollPosition - currentScrollPosition) / 20
+    );
+
+    const smoothScroll = () => {
+      currentScrollPosition += scrollStep;
+      window.scrollTo(0, currentScrollPosition);
+
+      if (currentScrollPosition < targetScrollPosition) {
+        window.requestAnimationFrame(smoothScroll);
+      }
+    };
+
+    window.requestAnimationFrame(smoothScroll);
   };
 
   handleLoadMore = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
-      try {
-        this.setState({ isLoading: true });
+  handleImageClick = image => {
+    this.setState({ showModal: true, selectedImage: image });
+  };
 
-        const data = await fetchImages(query, page);
-
-        this.setState(prevState => ({
-          images: [...prevState.images, ...data.hits],
-        }));
-
-        console.log(data);
-
-        if (!data.totalHits) {
-          return toast.success(
-            'Sorry, there are no images matching your search query. Please try again'
-          );
-        }
-
-        const totalPages = Math.ceil(data.totalHits / 12);
-
-        if (page === totalPages) {
-          this.setState({ endCollection: true });
-          toast.success('No more pictures');
-        }
-      } catch (error) {
-        console.log('Error', error.message);
-      } finally {
-        this.setState({ isLoading: false });
-      }
-    }
-  }
+  closeModal = () => {
+    this.setState({ showModal: false, selectedImage: null });
+  };
 
   render() {
-    const { images, isLoading, endCollection, showModal, modalImageURL } =
-      this.state;
+    const { images, isLoading, showModal, selectedImage } = this.state;
 
-    const showLoadMoreBtn = images.length > 0 && !endCollection;
     return (
-      <div className={css.app}>
-        <Toaster position="top-right" reverseOrder={false} />
-        {showModal && (
-          <Modal onClose={this.closeModal}>
-            <img src={modalImageURL} alt={this.state.tags} />
-          </Modal>
+      <div className="App">
+        <Searchbar onSubmit={this.handleSearch} />
+        <ImageGallery images={images} onImageClick={this.handleImageClick} />
+        {isLoading && <LoaderSpinner />}
+        {images.length > 0 && !isLoading && (
+          <Button onClick={this.handleLoadMore}>Load more</Button>
         )}
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        <ImageGallery images={this.state.images} onClick={this.openModal} />
-        {showLoadMoreBtn && <Button onClick={() => this.handleLoadMore()} />}
-        {isLoading && (
-          <Loader>
-            <ThreeCircles
-              height="100"
-              width="100"
-              color="#063970"
-              wrapperStyle={{}}
-              wrapperClass=""
-              visible={true}
-              ariaLabel="three-circles-rotating"
-              outerCircleColor=""
-              innerCircleColor=""
-              middleCircleColor=""
-            />
-          </Loader>
-        )}
+        {showModal && <Modal image={selectedImage} onClose={this.closeModal} />}
       </div>
     );
   }
 }
+
+export default App;
